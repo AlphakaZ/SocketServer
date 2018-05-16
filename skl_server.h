@@ -2,6 +2,7 @@
 #define SKL_SERVER_H
 
 #include <arpa/inet.h>
+#include <stdbool.h>
 
 #ifndef QUEUELIMIT
 #define QUEUELIMIT 5
@@ -14,6 +15,13 @@
 #ifndef BUFSIZE
 #define BUFSIZE (MSGSIZE + 1)
 #endif
+
+
+// 分かりやすいように、各変数にエイリアスを用意
+#define SKL_SOCKET_DOMAIN_IPV4 PF_INET
+#define SKL_SOCKET_TYPE_TCP SOCK_STREAM
+#define SKL_SOCKET_PROTOCOL_TCP IPPROTO_TCP
+#define SKL_SOCKET_ADDR_IPV4 AF_INET
 
 typedef struct
 {
