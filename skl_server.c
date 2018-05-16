@@ -79,14 +79,30 @@ bool setupServer(int portNumber, ServerSocketModule *sMdl)
         return false;
     }
 
-
+    // listen状態にする。
     if(!readyServer(sMdl)){
         return false;
     }
     return true;
 }
 
-bool startServer(ServerSocketModule *sMdl)
+bool startServer(ServerSocketModule *sMdl,SERVER_RESPONSE_FUNC func)
 {
+    unsigned int clientLen; // client internet socket address length
 
+    while(1) {
+        clientLen = sizeof(sMdl->clientSocketAddress);
+        if ((sMdl->clientSocket = accept(sMdl->serverSocket, (struct sockaddr *) &(sMdl->clientSocketAddress), &clientLen)) < 0) {
+            perror("accept() failed.");
+            return false;
+        }else{
+            printf("connected from %s.\n", inet_ntoa(sMdl->clitSockAddr.sin_addr));
+            func(sMdl);
+        }
+    }
+}
+
+void closeServer(ServerSocketModule *sMdl)
+{
+    close(sMdl->serverSocket);
 }

@@ -16,7 +16,6 @@
 #define BUFSIZE (MSGSIZE + 1)
 #endif
 
-
 // 分かりやすいように、各変数にエイリアスを用意
 #define SKL_SOCKET_DOMAIN_IPV4 PF_INET
 #define SKL_SOCKET_TYPE_TCP SOCK_STREAM
@@ -36,15 +35,15 @@ typedef struct
     unsigned short serverPort;
 }ServerSocketModule;
 
+typedef int(*SERVER_RESPONSE_FUNC)(ServerSocketModule* sMdl);
+
 // 文字列をポート番号に変換するユーティリティ関数。
 // 変換できなければ-1を返す。
 int str2portNumber(const char* str);
 
 bool setupServer(int portNumber,ServerSocketModule* sMdl);
-bool startServer(ServerSocketModule* sMdl);
-
-//データを渡す、という単位で細かくできたらよい。
-
+bool startServer(ServerSocketModule* sMdl,SERVER_RESPONSE_FUNC func);
+void closeServer(ServerSocketModule* sMdl);
 
 #endif // SKL_SERVER_H
 
