@@ -86,18 +86,36 @@ bool setupServer(int portNumber, ServerSocketModule *sMdl)
     return true;
 }
 
-bool startServer(ServerSocketModule *sMdl,SERVER_RESPONSE_FUNC func)
+int startServer(ServerSocketModule *sMdl,SERVER_RESPONSE_FUNC func)
 {
-    unsigned int clientLen; // client internet socket address length
+    ClientSocketModule cMdl;
+    cMdl.addressLength = sizeof(cMdl.socketAddress);
+    if ((cMdl.socket = accept(sMdl->serverSocket, (struct sockaddr *) &(cMdl.socketAddress), &(cMdl.addressLength))) < 0) {
+        perror("accept() failed.");
+        return -1;
+    }else{
+        printf("connected from %s.\n", inet_ntoa(cMdl->socketAddress.sin_addr));
+        int ret = func(sMdl,&cMdl);
+        close(cMdl.socket);
+        return ret;
+    }
+}
 
-    while(1) {
-        clientLen = sizeof(sMdl->clientSocketAddress);
-        if ((sMdl->clientSocket = accept(sMdl->serverSocket, (struct sockaddr *) &(sMdl->clientSocketAddress), &clientLen)) < 0) {
+int startServerLoop(ServerSocketModule *sMdl, SERVER_RESPONSE_FUNC func)
+{
+    ClientSocketModule cMdl;
+    cMdl.addressLength = sizeof(cMdl.socketAddress);
+    while(1){
+        if ((cMdl.socket = accept(sMdl->serverSocket, (struct sockaddr *) &(cMdl.socketAddress), &(cMdl.addressLength))) < 0) {
             perror("accept() failed.");
-            return false;
+            return -1;
         }else{
-            printf("connected from %s.\n", inet_ntoa(sMdl->clitSockAddr.sin_addr));
-            func(sMdl);
+            printf("connected from %s.\n", inet_ntoa(sMdl->clientSocketAddress.sin_addr));
+            int ret = func(sMdl);
+            if(ret == -1){
+                close(cMdl.socket);
+                return ret;
+            }
         }
     }
 }
