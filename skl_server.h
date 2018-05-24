@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 
+//これらの数値については上書き可能
 #ifndef QUEUELIMIT
 #define QUEUELIMIT 5
 #endif

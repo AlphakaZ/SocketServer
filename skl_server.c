@@ -94,7 +94,7 @@ int startServer(ServerSocketModule *sMdl,SERVER_RESPONSE_FUNC func)
         perror("accept() failed.");
         return -1;
     }else{
-        printf("connected from %s.\n", inet_ntoa(cMdl->socketAddress.sin_addr));
+        printf("connected from %s.\n", inet_ntoa(cMdl.socketAddress.sin_addr));
         int ret = func(sMdl,&cMdl);
         close(cMdl.socket);
         return ret;
@@ -110,10 +110,10 @@ int startServerLoop(ServerSocketModule *sMdl, SERVER_RESPONSE_FUNC func)
             perror("accept() failed.");
             return -1;
         }else{
-            printf("connected from %s.\n", inet_ntoa(sMdl->clientSocketAddress.sin_addr));
-            int ret = func(sMdl);
+            printf("connected from %s.\n", inet_ntoa(cMdl.socketAddress.sin_addr));
+            int ret = func(sMdl,&cMdl);
+            close(cMdl.socket);
             if(ret == -1){
-                close(cMdl.socket);
                 return ret;
             }
         }
