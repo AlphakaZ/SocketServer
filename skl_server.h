@@ -17,6 +17,11 @@
 #define BUFSIZE (MSGSIZE + 1)
 #endif
 
+// ファイル送信時の一回の最大値
+#ifndef LINESIZE
+#define LINESIZE 2048
+#endif
+
 // 分かりやすいように、各変数にエイリアスを用意
 #define SKL_SOCKET_DOMAIN_IPV4 PF_INET
 #define SKL_SOCKET_TYPE_TCP SOCK_STREAM
@@ -66,6 +71,13 @@ int startServer(ServerSocketModule* sMdl,SERVER_RESPONSE_FUNC func);
 int startServerLoop(ServerSocketModule* sMdl,SERVER_RESPONSE_FUNC func);
 
 void closeServer(ServerSocketModule* sMdl);
+
+/// ユーティリティ関数
+
+bool sendmsg2client(ClientSocketModule* cMdl,const char* msg);
+bool sendfile2client(ClientSocketModule* cMdl,const char* path);
+
+bool recvmsgfromclient(ClientSocketModule* cMdl, char* message);
 
 #endif // SKL_SERVER_H
 

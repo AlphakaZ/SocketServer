@@ -15,6 +15,7 @@
 #include <netdb.h>
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 static int generateSocket()
 {
@@ -49,7 +50,7 @@ static bool initServerSocketAddress(ServerSocketModule* sMdl){
 
 int str2portNumber(const char *str)
 {
-    int n = (unsigned short) atoi(str);
+    int n = (unsigned short)strtol(str,(char**)NULL,10);
         if(n == 0){
             fprintf(stderr, "invalid port number.\n");
             return -1;
@@ -123,4 +124,45 @@ int startServerLoop(ServerSocketModule *sMdl, SERVER_RESPONSE_FUNC func)
 void closeServer(ServerSocketModule *sMdl)
 {
     close(sMdl->serverSocket);
+}
+
+bool sendmsg2client(ClientSocketModule* cMdl, const char* msg){
+    int len = strlen(msg);
+
+    if(write(cMdl->socket,msg,len) != len){
+        fprintf(stderr, "error on send2client()");
+        return false;
+    }
+    return true;
+}
+
+static FILE* openfile(const char* path){
+    FILE *fp = NULL;
+    fp = fopen(path, "rb");//バイナリ読み出しモード
+    return fp;
+}
+
+bool sendfile2client(ClientSocketModule *cMdl, const char *path)
+{
+    FILE* fp = openfile(path);
+
+    if(fp==NULL){
+        fprintf(stderr,"error :There are no file [%s]\n",path);
+        return false;
+    }
+
+    unsigned char line[LINESIZE];
+    int size;
+    while(size = fread(line, sizeof(unsigned char),LINE_SIZE, fp)){
+        write(cMdl->socket, line, size);
+    }
+
+    fclose(fp);
+    return true;
+}
+
+bool recvmsgfromclient(ClientSocketModule *cMdl, char *message, unsigned int length)
+{
+    memset(message, 0, length);
+    recv(cMdl->socket,message,length,0);
 }
