@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include <string.h>
+
 #include "skl_server.h"
 
 typedef enum perror{
@@ -26,7 +28,8 @@ int parse_url(const char *request, char* url){
     }
 
     start += 5;
-    for(int i=0; start+i!=end; i++){
+    int i;
+    for(i=0; start+i!=end; i++){
         url[i] = start[i];
     }
     url[i] = '\0';
@@ -36,6 +39,9 @@ int parse_url(const char *request, char* url){
 int httpServer(ServerSocketModule* sMdl,ClientSocketModule* cMdl)
 {
     //httpの通信処理を記述する。接続は終了している。
+    char msg[BUFSIZE];
+    recvmsgfromclient(cMdl,msg,BUFSIZE);
+
     return 1;
 }
 

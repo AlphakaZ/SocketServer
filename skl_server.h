@@ -77,7 +77,7 @@ void closeServer(ServerSocketModule* sMdl);
 bool sendmsg2client(ClientSocketModule* cMdl,const char* msg);
 bool sendfile2client(ClientSocketModule* cMdl,const char* path);
 
-bool recvmsgfromclient(ClientSocketModule* cMdl, char* message);
+void recvmsgfromclient(ClientSocketModule* cMdl, char* message,unsigned int length);
 
 #endif // SKL_SERVER_H
 
