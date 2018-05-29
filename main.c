@@ -1,30 +1,19 @@
 #include <stdio.h>
-
 #include <string.h>
+#include <unistd.h>
 
 #include "skl_server.h"
 
-typedef enum perror{
-    NO_ERROR = 0,
-    NO_GET = 1 << 1,
-    NO_HTTP = 1 << 2,
-}parseerror;
 
-//
+
+// from Nakano
 int parse_url(const char *request, char* url){
-    char *start = strstr(request, "GET /");
-    char *end = strstr(request, "HTTP/");
 
-    int ret=NO_ERROR;
-    if(start == NULL){
-        ret |= NO_GET;
-    }
-    if(end == NULL){
-        ret |= NO_HTTP;
-    }
+    char *start = strstr(request, "GET /");//url開始位置
+    char *end = strstr(request, "HTTP/");//url終了位置
 
-    if(ret != NO_ERROR){
-        return ret;
+    if(start == NULL || end == NULL){
+        return false;
     }
 
     start += 5;
@@ -33,16 +22,102 @@ int parse_url(const char *request, char* url){
         url[i] = start[i];
     }
     url[i] = '\0';
-    return ret;
+    return true;
 }
+
+//もっと細かく分けて生成すべき
+
+const char header200[] =  "HTTP/1.0 200 OK\r\n"
+                                "Content-Type: %s\r\n"
+                                "Transfer-Encoding: chunked\r\n"
+                                "\r\n";
+
+const char header404[] = "HTTP/1.0 404 Not Found\r\n"
+                         "Status: 404\r\n"
+                         "Content-Type: text/html\r\n"
+                         "Transfer-Encoding: chunked\r\n"
+                         "\r\n"
+                         "<h1>404 Error</h1>";
+
+#define ENCODING chunked;
+
+//レスポンスヘッダの生成関数
+
+const char* generateHttpStatusHeader(int code){
+    switch(code){
+
+    case 200: // 正常
+        return header200;
+    case 301: // ページの引っ越し
+    case 302: // ページの一時的な引っ越し
+    case 304: // 未更新(前に渡したのと同じ)
+    case 403: // forbidden
+
+    case 404:
+    default:
+        return header404;
+    }
+}
+
+const char* getCurrentDirectory(){
+    static char currentdir[BUFSIZE];
+    memset(currentdir, '\0', BUFSIZE);
+    return getcwd(currentdir,BUFSIZE);
+}
+
+typedef enum{
+    EXT_HTML,
+    EXT_JS,
+    EXT_PHP,
+    EXT_SIZE
+}EXTENDIONS;
+const char* extensions[]={
+    "html"
+    "js"
+    "php"
+};
+
+int getExtension(const char* filePath){
+    const char *ext = strrchr(filePath, '.');
+    ext++;
+    for(int i=0;i<EXT_SIZE;++i){
+        if(strstr(ext,extensions[i])==0){
+            return i;
+        }
+    }
+    return -1;//存在しない拡張子
+}
+
 
 int httpServer(ServerSocketModule* sMdl,ClientSocketModule* cMdl)
 {
     //httpの通信処理を記述する。接続は終了している。
-    char msg[BUFSIZE];
-    recvmsgfromclient(cMdl,msg,BUFSIZE);
+    char request[BUFSIZE];
+    char url[BUFSIZE];
 
-    return 1;
+    recvmsgfromclient(cMdl,request,BUFSIZE);
+
+    if(!parse_url(request,url)){
+        // リクエストが不正
+        return -1;
+    }
+
+    if(getExtension(url) == -1){
+        sendmsg2client(cMdl,generateHttpStatusHeader(404));
+        return 404;
+    }
+
+    char filepath[BUFSIZE];
+
+    snprintf(filepath, BUFSIZE, "%s/%s", getCurrentDirectory(), url);
+    // ファイルの存在チェック
+
+    if(!sendfile2client(cMdl,filepath)){
+        sendmsg2client(cMdl,generateHttpStatusHeader(404));
+        return 404;
+    }
+
+    return -1;
 }
 
 
@@ -52,9 +127,11 @@ int main(int argc, char** argv)
     ServerSocketModule sMdl;
 
     int port;
-    if((port = str2portNumber(argv[0])) != -1){
+    if(argc==2 && (port = str2portNumber(argv[0])) != -1){
         setupServer(port,&sMdl);
         startServer(&sMdl,httpServer);
+    }else{
+        //引数が不正
     }
     return 0;
 }

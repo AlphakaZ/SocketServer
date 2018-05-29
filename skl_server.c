@@ -153,7 +153,7 @@ bool sendfile2client(ClientSocketModule *cMdl, const char *path)
 
     unsigned char line[LINESIZE];
     int size;
-    while(size = fread(line, sizeof(unsigned char),LINESIZE, fp)){
+    while((size = fread(line, sizeof(unsigned char),LINESIZE, fp)) != 0){
         write(cMdl->socket, line, size);
     }
 
