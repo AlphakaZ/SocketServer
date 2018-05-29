@@ -127,9 +127,9 @@ int main(int argc, char** argv)
     ServerSocketModule sMdl;
 
     int port;
-    if(argc==2 && (port = str2portNumber(argv[0])) != -1){
+    if(argc==2 && (port = str2portNumber(argv[1])) != -1){
         setupServer(port,&sMdl);
-        startServer(&sMdl,httpServer);
+        startServerLoop(&sMdl,httpServer);
     }else{
         //引数が不正
     }
