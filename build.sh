@@ -5,3 +5,4 @@ mkdir build
 cd build
 cmake ..
 make
+mv SocketServer ../SocketServer
