@@ -46,9 +46,7 @@ typedef struct
 
 typedef int(*SERVER_RESPONSE_FUNC)(ServerSocketModule* sMdl,ClientSocketModule* cMdl);
 
-// 文字列をポート番号に変換するユーティリティ関数。
-// 変換できなければ-1を返す。
-int str2portNumber(const char* str);
+
 
 bool setupServer(int portNumber,ServerSocketModule* sMdl);
 

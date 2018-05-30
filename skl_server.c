@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "skl_serverutil.h"
+
 static int generateSocket()
 {
     int n = socket(SKL_SOCKET_DOMAIN_IPV4,
@@ -48,15 +50,7 @@ static bool initServerSocketAddress(ServerSocketModule* sMdl){
     return true;
 }
 
-int str2portNumber(const char *str)
-{
-    int n = (unsigned short)strtol(str,(char**)NULL,10);
-        if(n == 0){
-            fprintf(stderr, "invalid port number.\n");
-            return -1;
-        }
-    return n;
-}
+
 
 static bool readyServer(ServerSocketModule* sMdl){
     if (listen(sMdl->serverSocket, QUEUELIMIT) < 0) {
