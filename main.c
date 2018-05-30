@@ -96,10 +96,11 @@ int httpServer(ServerSocketModule* sMdl,ClientSocketModule* cMdl)
     char url[BUFSIZE];
 
     recvmsgfromclient(cMdl,request,BUFSIZE);
+    printf("request:\n%s",request);
 
     if(!parse_url(request,url)){
         // リクエストが不正
-        return -1;
+        return 0;
     }
 
     if(getExtension(url) == -1){
@@ -115,9 +116,10 @@ int httpServer(ServerSocketModule* sMdl,ClientSocketModule* cMdl)
     if(!sendfile2client(cMdl,filepath)){
         sendmsg2client(cMdl,generateHttpStatusHeader(404));
         return 404;
+    }else{
+        return 0;
     }
 
-    return -1;
 }
 
 
